@@ -1,0 +1,31 @@
+{
+  "name": "shared-clipboard-client",
+  "version": "1.0.0",
+  "description": "Shared clipboard client for desktop",
+  "main": "/build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node ./build/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ard2148810/Shared-clipboard-client.git"
+  },
+  "keywords": [
+    "clipboard",
+    "shared",
+    "client",
+    "desktop"
+  ],
+  "author": "Adrian Ałaszewski",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ard2148810/Shared-clipboard-client/issues"
+  },
+  "homepage": "https://github.com/Ard2148810/Shared-clipboard-client#readme",
+  "devDependencies": {
+    "electron": "10.1.5",
+    "typescript": "^4.0.5"
+  }
+}
