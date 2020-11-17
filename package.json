@@ -1,31 +1,89 @@
 {
   "name": "shared-clipboard-client",
+  "productName": "shared-clipboard-client",
   "version": "1.0.0",
-  "description": "Shared clipboard client for desktop",
-  "main": "/build/index.js",
+  "description": "My Electron application description",
+  "main": ".webpack/main",
   "scripts": {
-    "build": "tsc",
-    "start": "npm run build && electron ./build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "eslint --ext .ts ."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Ard2148810/Shared-clipboard-client.git"
+  "keywords": [],
+  "author": {
+    "name": "Adrian Ałaszewski",
+    "email": "wns2148810@interia.pl"
   },
-  "keywords": [
-    "clipboard",
-    "shared",
-    "client",
-    "desktop"
-  ],
-  "author": "Adrian Ałaszewski",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Ard2148810/Shared-clipboard-client/issues"
+  "license": "MIT",
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "shared_clipboard_client"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ],
+      "plugins": [
+        [
+          "@electron-forge/plugin-webpack",
+          {
+            "mainConfig": "./webpack.main.config.js",
+            "renderer": {
+              "config": "./webpack.renderer.config.js",
+              "entryPoints": [
+                {
+                  "html": "./src/index.html",
+                  "js": "./src/renderer.ts",
+                  "name": "main_window"
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    }
   },
-  "homepage": "https://github.com/Ard2148810/Shared-clipboard-client#readme",
   "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.54",
+    "@electron-forge/maker-deb": "^6.0.0-beta.54",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.54",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
+    "@electron-forge/maker-zip": "^6.0.0-beta.54",
+    "@electron-forge/plugin-webpack": "^6.0.0-beta.54",
+    "@marshallofsound/webpack-asset-relocator-loader": "^0.5.0",
+    "@typescript-eslint/eslint-plugin": "^4.8.0",
+    "@typescript-eslint/parser": "^4.8.0",
+    "css-loader": "^4.3.0",
     "electron": "10.1.5",
+    "eslint": "^7.13.0",
+    "eslint-plugin-import": "^2.22.1",
+    "fork-ts-checker-webpack-plugin": "^5.2.1",
+    "node-abi": "^2.19.1",
+    "node-loader": "^1.0.2",
+    "style-loader": "^1.3.0",
+    "ts-loader": "^8.0.11",
     "typescript": "^4.0.5"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.0"
   }
 }
