@@ -1,31 +1,11 @@
-const clipboardListener = require('clipboard-event');
-const clipboardy = require('clipboardy');
 const { app, Tray, Menu, BrowserWindow } = require('electron');
-const WebSocket = require('ws');
+const { Clipboard } = require('./clipboard');
+const { WebSocketManager } = require('./WebSocketManager');
 
-// To start listening
-clipboardListener.startListening();
-clipboardListener.on('change', () => {
-    //console.log(`Clipboard changed ${clipboardy.readSync()}`);
-    addClipboardHistoryItem(clipboardy.readSync());
-});
-
-const ws = new WebSocket('ws://localhost:5001');
-
-ws.on('open', () => {
-    console.log(ws.readyState ? 'Connected to WS server' : 'WebSocket connection FAILED!');
-});
-
-ws.on('message', (data) => {
-    console.log(data);
-    clipboardy.writeSync(JSON.parse(data).content);
-});
 
 let mainWindow = null;
 let tray = null;
-let clipboardHistory = ["Empty clipboard", "Test"];
-let clipboardHistorySize = 5;
-const clipboardHistoryItemCharacterMax = 30;
+const trayMenuHistoryItemMaxSize = 30;
 
 const preferencesClicked = () => {
     if(mainWindow !== null) {
@@ -34,17 +14,11 @@ const preferencesClicked = () => {
     }
 }
 
-const addClipboardHistoryItem = (item) => {
-    clipboardHistory.unshift(item);
-    if(clipboardHistory.length > clipboardHistorySize) clipboardHistory.pop();
-    setTrayContextMenu();
-}
-
-const setTrayContextMenu = () => {
-    const menuItemsFromClipboard = clipboardHistory.map(item => {
+const setTrayContextMenu = (historyItems) => {
+    const menuItemsFromClipboard = historyItems.map(item => {
         let processedItem = item;
-        if(processedItem.length > clipboardHistoryItemCharacterMax) {
-            processedItem = processedItem.slice(0, clipboardHistoryItemCharacterMax);
+        if(processedItem.length > trayMenuHistoryItemMaxSize) {
+            processedItem = processedItem.slice(0, trayMenuHistoryItemMaxSize);
             processedItem = processedItem.concat("...");
         }
         return { label: processedItem };
@@ -61,9 +35,19 @@ const setTrayContextMenu = () => {
     tray.setContextMenu(contextMenu);
 }
 
+const onClipboardUpdated = (history) => {   // Update context menu when new value added to clipboard
+    setTrayContextMenu(history);
+}
+
+const onClipboardChange = (text) => {   // Called when something is locally copied to clipboard
+    app.websocket.send(text)
+}
+
 app.whenReady().then(() => {
     app.quitting = false;
 
+    app.clipboard = new Clipboard(onClipboardUpdated, onClipboardChange)
+    app.websocket = new WebSocketManager(app.clipboard);
     // Window
     mainWindow = new BrowserWindow({
         height: 600,
@@ -81,7 +65,7 @@ app.whenReady().then(() => {
 
     // Tray
     tray = new Tray('icon.png');
-    setTrayContextMenu();
+    setTrayContextMenu(app.clipboard.history);
 
 }).catch(console.log);
 
@@ -92,7 +76,5 @@ app.on('before-quit', () => {
 });
 
 app.on('quit', () => {
-    clipboardListener.stopListening();
+    app.clipboard.setListening(false);
 });
-// To stop listening
-//clipboardListener.stopListening();
