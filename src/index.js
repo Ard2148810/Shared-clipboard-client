@@ -14,14 +14,19 @@ const preferencesClicked = () => {
     }
 }
 
+const historyItemClicked = (id) => {
+    app.clipboard.useHistoryItem(id);
+}
+
 const setTrayContextMenu = (historyItems) => {
-    const menuItemsFromClipboard = historyItems.map(item => {
+    const menuItemsFromClipboard = historyItems.map((item, index) => {
         let processedItem = item;
         if(processedItem.length > trayMenuHistoryItemMaxSize) {
-            processedItem = processedItem.slice(0, trayMenuHistoryItemMaxSize);
-            processedItem = processedItem.concat("...");
+            processedItem = processedItem
+                .slice(0, trayMenuHistoryItemMaxSize)
+                .concat("...");
         }
-        return { label: processedItem };
+        return { label: processedItem, click() {historyItemClicked(index);}};
     });
 
     const staticMenuItems = [

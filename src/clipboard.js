@@ -15,6 +15,10 @@ class Clipboard {
         this.addHistoryItem(text);
     }
 
+    useHistoryItem = (id) => {
+        clipboardy.writeSync(this.history[id]);
+    }
+
     addHistoryItem = (item) => {
         this.history.unshift(item);
         if(this.history.length > this.capacity) this.history.pop();
