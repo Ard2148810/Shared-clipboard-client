@@ -8,15 +8,19 @@ class Clipboard {
         this.onClipboardUpdated = onClipboardUpdated;
         this.onClipboardChange = onClipboardChange;
         this.setListening(true);
+        this.lastFromServer = null;
     }
 
-    write(text) {
+    write(text, fromServer) {
+        if(fromServer) {
+            this.lastFromServer = text;
+        } else {
+            this.lastFromServer = null;
+        }
         clipboardy.writeSync(text);
-        this.addHistoryItem(text);
     }
-
     useHistoryItem = (id) => {
-        clipboardy.writeSync(this.history[id]);
+        this.write(this.history[id], false);
     }
 
     addHistoryItem = (item) => {
@@ -30,8 +34,8 @@ class Clipboard {
             clipboardListener.startListening();
             clipboardListener.on('change', () => {
                 const newValue = clipboardy.readSync();
-                this.addHistoryItem(newValue);
-                this.onClipboardChange(newValue);
+                const fromServer = this.lastFromServer !== null ? newValue === this.lastFromServer : false;
+                this.onClipboardChange(newValue, fromServer);
             });
         }
         else {

@@ -1,4 +1,4 @@
-const { app, Tray, Menu, BrowserWindow } = require('electron');
+const { app, Tray, Menu, BrowserWindow, ipcMain } = require('electron');
 const { Clipboard } = require('./clipboard');
 const { WebSocketManager } = require('./WebSocketManager');
 
@@ -18,6 +18,11 @@ const historyItemClicked = (id) => {
     app.clipboard.useHistoryItem(id);
 }
 
+ipcMain.handle('perform-action', (event, ...args) => {
+    console.log({ msg: 'Hello from main process!', event, args});
+    event.sender.send('test', 1);
+})
+
 const setTrayContextMenu = (historyItems) => {
     const menuItemsFromClipboard = historyItems.map((item, index) => {
         let processedItem = item;
@@ -31,7 +36,7 @@ const setTrayContextMenu = (historyItems) => {
 
     const staticMenuItems = [
         { type: 'separator' },
-        { label: 'Preferences', click() {preferencesClicked()} },
+        { label: 'Manager', click() {preferencesClicked()} },
         { type: 'separator' },
         { role: 'quit' }];
     const contextMenu = Menu.buildFromTemplate(menuItemsFromClipboard.concat(staticMenuItems));
@@ -44,8 +49,11 @@ const onClipboardUpdated = (history) => {   // Update context menu when new valu
     setTrayContextMenu(history);
 }
 
-const onClipboardChange = (text) => {   // Called when something is locally copied to clipboard
-    app.websocket.send(text)
+const onClipboardChange = (text, fromServer) => {
+    app.clipboard.addHistoryItem(text);
+    if(!fromServer) {   // Prevent sending back the same clipboard item
+        app.websocket.send(text);
+    }
 }
 
 app.whenReady().then(() => {
@@ -58,8 +66,17 @@ app.whenReady().then(() => {
         height: 600,
         width: 800,
         show: false,
-        icon: 'icon.png'
+        icon: 'icon.png',
+        webPreferences: {
+            nodeIntegration: true
+        }
     });
+    const url = require('url').format({
+        protocol: 'file',
+        slashes: true,
+        pathname: require('path').join(__dirname, 'index.html')
+    })
+    mainWindow.loadURL(url).catch(console.log);
     mainWindow.setMenu(null);
     mainWindow.on('close', event => {
         if(app.quitting === false) {
@@ -67,6 +84,7 @@ app.whenReady().then(() => {
             mainWindow.hide();
         }
     });
+    mainWindow.openDevTools();
 
     // Tray
     tray = new Tray('icon.png');
