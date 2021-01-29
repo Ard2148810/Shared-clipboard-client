@@ -33,3 +33,27 @@ body {
     transform: translateX(-110%);
     color: #3c3c3c;
 }
+
+#status-value {
+
+}
+
+.status-disconnected {
+    color: indianred;
+}
+
+.status-connected {
+    color: #409a40;
+}
+
+.alert {
+    background-color: #ea8b79;
+    padding: 10px 15px;
+    color: #4c0001;
+    border-radius: 5px;
+    border: 1px solid #de7c6a;
+    position: absolute;
+    bottom: 15px;
+    opacity: 0;
+    transition: opacity 300ms;
+}

@@ -9,13 +9,20 @@
 <body>
 <h1 class="header-main">Shared clipboard manager</h1>
 <div class="main">
+    <div class="status">
+        <span class="label">Status: </span>
+        <span class="status-disconnected" id="status-value">Disconnected</span>
+    </div>
     <div class="input-control">
         <label>
-            <span class="label">Room ID</span>
-            <input type="text">
+            <span class="label">Room ID: </span>
+            <input name="roomId" id="roomId" type="text" minlength="9" maxlength="9" size="9">
         </label>
     </div>
     <button id="btnConnect">Connect</button>
+    <div id="mainAlert" class="alert">
+        ...
+    </div>
 </div>
 
 <script>

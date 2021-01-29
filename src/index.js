@@ -18,11 +18,6 @@ const historyItemClicked = (id) => {
     app.clipboard.useHistoryItem(id);
 }
 
-ipcMain.handle('perform-action', (event, ...args) => {
-    console.log({ msg: 'Hello from main process!', event, args});
-    event.sender.send('test', 1);
-})
-
 const setTrayContextMenu = (historyItems) => {
     const menuItemsFromClipboard = historyItems.map((item, index) => {
         let processedItem = item;
@@ -41,7 +36,7 @@ const setTrayContextMenu = (historyItems) => {
         { role: 'quit' }];
     const contextMenu = Menu.buildFromTemplate(menuItemsFromClipboard.concat(staticMenuItems));
 
-    tray.setToolTip('This is my application.');
+    tray.setToolTip('Shared clipboard');
     tray.setContextMenu(contextMenu);
 }
 
@@ -51,16 +46,40 @@ const onClipboardUpdated = (history) => {   // Update context menu when new valu
 
 const onClipboardChange = (text, fromServer) => {
     app.clipboard.addHistoryItem(text);
-    if(!fromServer) {   // Prevent sending back the same clipboard item
+    if(!fromServer && app.websocket !== null && app.websocket.isConnected()) {   // Prevent sending back the same clipboard item
         app.websocket.send(text);
+    }
+}
+
+const connectionHandler = (status, code, reason) => {
+    if(status === 'open') {
+        app.renderer.send('ws-connected');
+    } else if(status === 'close') {
+        app.renderer.send('ws-disconnected', code, reason);
+    } else if(status === 'error') {
+        app.renderer.send('ws-error');
+    }
+}
+
+const onConnect = (connect, roomId) => {
+    if(connect) {
+        app.websocket = new WebSocketManager(app.clipboard, connectionHandler, roomId);
+    } else if(app.websocket !== null) {
+        app.websocket.disconnect();
+        app.websocket = null;
     }
 }
 
 app.whenReady().then(() => {
     app.quitting = false;
 
-    app.clipboard = new Clipboard(onClipboardUpdated, onClipboardChange)
-    app.websocket = new WebSocketManager(app.clipboard);
+    app.clipboard = new Clipboard(onClipboardUpdated, onClipboardChange);
+    app.renderer = null;
+    ipcMain.handle('renderer-connection', (event, connect, roomId) => {
+        app.renderer = event.sender;
+        onConnect(connect, roomId);
+    });
+    app.websocket = null;
     // Window
     mainWindow = new BrowserWindow({
         height: 600,
@@ -75,7 +94,7 @@ app.whenReady().then(() => {
         protocol: 'file',
         slashes: true,
         pathname: require('path').join(__dirname, 'index.html')
-    })
+    });
     mainWindow.loadURL(url).catch(console.log);
     mainWindow.setMenu(null);
     mainWindow.on('close', event => {

@@ -1,15 +1,11 @@
 const WebSocket = require('ws');
 
 class WebSocketManager {
-    constructor(clipboard) {
-        this.ws = new WebSocket('ws://localhost:5001');
-        this.ws.on('open', () => {
-            console.log('Connected');
-        });
-        this.ws.on('message', (data) => {
-            console.log(data);
-            clipboard.write(JSON.parse(data).content, true);
-        });
+    constructor(clipboard, connectionHandler, roomId) {
+        this.clipboard = clipboard;
+        this.connectionHandler = connectionHandler;
+        this.ws = null;
+        this.connect(roomId);
     }
 
     send(text) {
@@ -23,7 +19,32 @@ class WebSocketManager {
     }
 
     isConnected() {
-        return this.ws.readyState === 1;
+        return this.ws !== null && this.ws.readyState === 1;
+    }
+
+
+    connect(roomId) {
+        this.ws = new WebSocket('ws://localhost:5001', roomId);
+        this.ws.on('open', () => {
+            console.log(`open`);
+            this.connectionHandler('open');
+        });
+        this.ws.on('message', (data) => {
+            console.log(`message| ${data}`);
+            this.clipboard.write(JSON.parse(data).content, true);
+        });
+        this.ws.on('error', (event) => {
+            console.log(`error| ${event}`);
+            this.connectionHandler('error');
+        });
+        this.ws.on('close', (code, reason) => {
+            console.log(`close| ${code}`);
+            this.connectionHandler('close', code, reason);
+        })
+    }
+
+    disconnect() {
+        this.ws.close();
     }
 }
 
