@@ -3,6 +3,7 @@ const { ipcRenderer } = require('electron');
 let currentConnectionStatus = false;
 const btnConnect = document.querySelector('#btnConnect');
 const inputRoomId = document.querySelector('#roomId');
+const inputRoomDisplay = document.querySelector('#roomIdDisplay');
 let alertActive = false;
 let timeoutId = null;
 const mainAlert = document.querySelector('#mainAlert');
@@ -34,7 +35,11 @@ ipcRenderer.on('ws-error', (event) => {
     // No need for explicit disconnecting, it will be called implicitly
     console.log('error');
     alert('Server connection error');
-})
+});
+
+ipcRenderer.on('ws-room-id', (event, roomId) => {
+    inputRoomDisplay.innerHTML = roomId;
+});
 
 const statusValue = document.querySelector('#status-value');
 
@@ -50,6 +55,7 @@ function onDisconnected(code, reason) {
     btnConnect.innerHTML = 'Connect';
     statusValue.classList.replace('status-connected', 'status-disconnected');
     inputRoomId.disabled = false;
+    inputRoomDisplay.innerHTML = '';
     if(code === INCORRECT_ROOM_ID) {
         showAlert(reason);
     }

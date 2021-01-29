@@ -9,17 +9,28 @@
 <body>
 <h1 class="header-main">Shared clipboard manager</h1>
 <div class="main">
-    <div class="status">
-        <span class="label">Status: </span>
-        <span class="status-disconnected" id="status-value">Disconnected</span>
+    <div class="column column-separator">
+        <h3>Connection</h3>
+        <div class="input-control">
+            <label>
+                <span class="label">Room ID: </span>
+                <input name="roomId" id="roomId" type="text" minlength="9" maxlength="9" size="9">
+            </label>
+        </div>
+        <button id="btnConnect">Connect</button>
     </div>
-    <div class="input-control">
-        <label>
-            <span class="label">Room ID: </span>
-            <input name="roomId" id="roomId" type="text" minlength="9" maxlength="9" size="9">
-        </label>
+    <div class="column">
+        <h3>Current status</h3>
+        <div class="input-control">
+            <span class="label">Status: </span>
+            <span class="status-disconnected" id="status-value">Disconnected</span>
+        </div>
+        <div class="input-control">
+            <span class="label">Your room ID: </span>
+            <span class="room-id-display" id="roomIdDisplay"></span>
+        </div>
     </div>
-    <button id="btnConnect">Connect</button>
+
     <div id="mainAlert" class="alert">
         ...
     </div>

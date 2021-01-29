@@ -33,9 +33,12 @@ class Clipboard {
         if(value) {
             clipboardListener.startListening();
             clipboardListener.on('change', () => {
-                const newValue = clipboardy.readSync();
-                const fromServer = this.lastFromServer !== null ? newValue === this.lastFromServer : false;
-                this.onClipboardChange(newValue, fromServer);
+                clipboardy
+                    .read()
+                    .then((newValue) => {
+                    const fromServer = this.lastFromServer !== null ? newValue === this.lastFromServer : false;
+                    this.onClipboardChange(newValue, fromServer);
+                });
             });
         }
         else {

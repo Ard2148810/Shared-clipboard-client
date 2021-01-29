@@ -1,9 +1,10 @@
 const WebSocket = require('ws');
 
 class WebSocketManager {
-    constructor(clipboard, connectionHandler, roomId) {
+    constructor(clipboard, connectionHandler, roomId, roomReceivedHandler) {
         this.clipboard = clipboard;
         this.connectionHandler = connectionHandler;
+        this.roomReceivedHandler = roomReceivedHandler;
         this.ws = null;
         this.connect(roomId);
     }
@@ -25,22 +26,36 @@ class WebSocketManager {
 
     connect(roomId) {
         this.ws = new WebSocket('ws://localhost:5001', roomId);
+
         this.ws.on('open', () => {
             console.log(`open`);
             this.connectionHandler('open');
         });
+
         this.ws.on('message', (data) => {
             console.log(`message| ${data}`);
-            this.clipboard.write(JSON.parse(data).content, true);
+            try {
+                const jsonData= JSON.parse(data);
+                if(jsonData.type === 'room-id') {
+                    console.log(jsonData.content);
+                    this.roomReceivedHandler(jsonData.content);
+                } else {
+                    this.clipboard.write(jsonData.content, true);
+                }
+            } catch (e) {
+                console.log(e);
+            }
         });
+
         this.ws.on('error', (event) => {
             console.log(`error| ${event}`);
             this.connectionHandler('error');
         });
+
         this.ws.on('close', (code, reason) => {
             console.log(`close| ${code}`);
             this.connectionHandler('close', code, reason);
-        })
+        });
     }
 
     disconnect() {

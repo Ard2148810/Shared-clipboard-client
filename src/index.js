@@ -61,9 +61,13 @@ const connectionHandler = (status, code, reason) => {
     }
 }
 
+const roomReceivedHandler = (id) => {
+    app.renderer.send('ws-room-id', id);
+}
+
 const onConnect = (connect, roomId) => {
     if(connect) {
-        app.websocket = new WebSocketManager(app.clipboard, connectionHandler, roomId);
+        app.websocket = new WebSocketManager(app.clipboard, connectionHandler, roomId, roomReceivedHandler);
     } else if(app.websocket !== null) {
         app.websocket.disconnect();
         app.websocket = null;
