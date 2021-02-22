@@ -4,21 +4,28 @@ let currentConnectionStatus = false;
 const btnConnect = document.querySelector('#btnConnect');
 const inputRoomId = document.querySelector('#roomId');
 const inputRoomDisplay = document.querySelector('#roomIdDisplay');
+const statusValue = document.querySelector('#status-value');
 let alertActive = false;
 let timeoutId = null;
 const mainAlert = document.querySelector('#mainAlert');
 
 const INCORRECT_ROOM_ID = 4001;
-const INCORRECT_ROOM_ID_REASON = "Incorrect room ID";
 
 btnConnect
-    .addEventListener('click', (event) => {
+    .addEventListener('click', () => {
+        btnConnect.disabled = true;
+        inputRoomId.disabled = true;
+        if(currentConnectionStatus) {
+            statusValue.innerHTML = "Disconnecting...";
+        } else {
+            statusValue.innerHTML = "Connecting..."
+        }
         ipcRenderer
             .invoke('renderer-connection', !currentConnectionStatus, inputRoomId.value)
             .catch();
     });
 
-ipcRenderer.on('ws-connected', (event) => {
+ipcRenderer.on('ws-connected', () => {
     currentConnectionStatus = true;
     console.log('connected');
     onConnected();
@@ -31,23 +38,22 @@ ipcRenderer.on('ws-disconnected', (event, code, reason) => {
     onDisconnected(code, reason);
 });
 
-ipcRenderer.on('ws-error', (event) => {
+ipcRenderer.on('ws-error', () => {
     // No need for explicit disconnecting, it will be called implicitly
     console.log('error');
-    alert('Server connection error');
+    showAlert('Unable to connect to the server');
 });
 
 ipcRenderer.on('ws-room-id', (event, roomId) => {
     inputRoomDisplay.innerHTML = roomId;
 });
 
-const statusValue = document.querySelector('#status-value');
-
 function onConnected() {
     statusValue.innerHTML = 'Connected';
     btnConnect.innerHTML = 'Disconnect';
     statusValue.classList.replace('status-disconnected', 'status-connected');
     inputRoomId.disabled = true;
+    btnConnect.disabled = false;
 }
 
 function onDisconnected(code, reason) {
@@ -55,6 +61,7 @@ function onDisconnected(code, reason) {
     btnConnect.innerHTML = 'Connect';
     statusValue.classList.replace('status-connected', 'status-disconnected');
     inputRoomId.disabled = false;
+    btnConnect.disabled = false;
     inputRoomDisplay.innerHTML = '';
     if(code === INCORRECT_ROOM_ID) {
         showAlert(reason);
