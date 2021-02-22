@@ -107,7 +107,7 @@ app.whenReady().then(() => {
             mainWindow.hide();
         }
     });
-    mainWindow.openDevTools();
+    // mainWindow.openDevTools();
 
     // Tray
     tray = new Tray('icon.png');
