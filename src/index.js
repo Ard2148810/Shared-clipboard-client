@@ -26,12 +26,12 @@ const setTrayContextMenu = (historyItems) => {
                 .slice(0, trayMenuHistoryItemMaxSize)
                 .concat("...");
         }
-        return { label: processedItem, click() {historyItemClicked(index);}};
+        return { label: processedItem, click() { historyItemClicked(index); }};
     });
 
     const staticMenuItems = [
         { type: 'separator' },
-        { label: 'Manager', click() {preferencesClicked()} },
+        { label: 'Manager', click() { preferencesClicked() }},
         { type: 'separator' },
         { role: 'quit' }];
     const contextMenu = Menu.buildFromTemplate(menuItemsFromClipboard.concat(staticMenuItems));

@@ -3,22 +3,19 @@ const clipboardy = require('clipboardy');
 
 class Clipboard {
     constructor(onClipboardUpdated, onClipboardChange) {
-        this.history = ["Empty clipboard", "Test"];
+        this.history = ["Try copying something"];
         this.capacity = 5;
         this.onClipboardUpdated = onClipboardUpdated;
         this.onClipboardChange = onClipboardChange;
         this.setListening(true);
-        this.lastFromServer = null;
+        this.lastFromServer = false;
     }
 
     write(text, fromServer) {
-        if(fromServer) {
-            this.lastFromServer = text;
-        } else {
-            this.lastFromServer = null;
-        }
+        this.lastFromServer = fromServer;
         clipboardy.writeSync(text);
     }
+
     useHistoryItem = (id) => {
         this.write(this.history[id], false);
     }
@@ -36,8 +33,8 @@ class Clipboard {
                 clipboardy
                     .read()
                     .then((newValue) => {
-                    const fromServer = this.lastFromServer !== null ? newValue === this.lastFromServer : false;
-                    this.onClipboardChange(newValue, fromServer);
+                    this.onClipboardChange(newValue, this.lastFromServer);
+                    this.lastFromServer = false;
                 });
             });
         }
