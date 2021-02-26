@@ -13,7 +13,7 @@ class Clipboard {
 
     write(text, fromServer) {
         this.lastFromServer = fromServer;
-        clipboardy.writeSync(text);
+        clipboardy.write(text).then();
     }
 
     useHistoryItem = (id) => {

@@ -24,7 +24,7 @@ class WebSocketManager {
     }
 
     connect(roomId) {
-        this.ws = new WebSocket('ws://192.168.42.144:5001', roomId, { handshakeTimeout: 5000 });
+        this.ws = new WebSocket('ws://localhost:5001', roomId, { handshakeTimeout: 5000 });
 
         this.ws.on('open', () => {
             console.log(`open`);
